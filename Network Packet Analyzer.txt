@@ -1,0 +1,37 @@
+from scapy.all import sniff, IP, TCP, UDP, ARP, ICMP
+
+def packet_callback(packet):
+    if packet.haslayer(IP):
+        ip_src = packet[IP].src
+        ip_dst = packet[IP].dst
+        protocol = packet[IP].proto
+
+        if packet.haslayer(TCP):
+            protocol = 'TCP'
+            sport = packet[TCP].sport
+            dport = packet[TCP].dport
+        elif packet.haslayer(UDP):
+            protocol = 'UDP'
+            sport = packet[UDP].sport
+            dport = packet[UDP].dport
+        elif packet.haslayer(ICMP):
+            protocol = 'ICMP'
+            sport = None
+            dport = None
+        else:
+            sport = None
+            dport = None
+
+        print(f'IP Packet: {ip_src} -> {ip_dst} | Protocol: {protocol} | Source Port: {sport} | Destination Port: {dport}')
+
+    elif packet.haslayer(ARP):
+        arp_src = packet[ARP].psrc
+        arp_dst = packet[ARP].pdst
+        print(f'ARP Packet: {arp_src} -> {arp_dst}')
+
+def main():
+    # Capture packets on all interfaces, with no specific filter
+    sniff(prn=packet_callback, store=0)
+
+if __name__ == '__main__':
+    main()
